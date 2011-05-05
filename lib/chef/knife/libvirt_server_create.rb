@@ -36,11 +36,11 @@ class Chef
         :proc => Proc.new { |f| Chef::Config[:knife][:flavor] = f },
         :default => "small"
         
-      option :image,
-        :short => "-i IMAGE",
-        :long => "--image IMAGE",
-        :description => "The base image for the server",
-        :proc => Proc.new { |i| Chef::Config[:knife][:image] = i }
+      option :system,
+        :short => "-s SYSTEM ",
+        :long => "--system SYSTEM",
+        :description => "A system filename",
+        :proc => Proc.new { |i| Chef::Config[:knife][:system] = i }
       
       option :hostname,
         :short => "-n HOSTNAME",
@@ -52,7 +52,7 @@ class Chef
         :long => "--domain DOMAIN",
         :description => "Domain name of the new server"
         
-      option :distro,
+      option :bootstrap,
         :short => "-b BOOTSTRAP",
         :long => "--bootstrap BOOTSTRAP_FILENAME",
         :description => "Bootstrap a distro using a template",
