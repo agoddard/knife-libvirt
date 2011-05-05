@@ -29,28 +29,45 @@ class Chef
             
       banner "knife libvirt server create (options)"
       
-      option :name,
-        :short => "-n NAME",
-        :long => "--name NAME",
+      option :flavor,
+        :short => "-f FLAVOR",
+        :long => "--flavor FLAVOR",
+        :description => "The flavor of server (small, medium, etc)",
+        :proc => Proc.new { |f| Chef::Config[:knife][:flavor] = f },
+        :default => "small"
+        
+      option :image,
+        :short => "-i IMAGE",
+        :long => "--image IMAGE",
+        :description => "The base image for the server",
+        :proc => Proc.new { |i| Chef::Config[:knife][:image] = i }
+      
+      option :hostname,
+        :short => "-n HOSTNAME",
+        :long => "--name HOSTNAME",
         :description => "The host name of the new server"
         
       option :domain,
         :short => "-d DOMAIN",
         :long => "--domain DOMAIN",
         :description => "Domain name of the new server"
+        
+      option :distro,
+        :short => "-b BOOTSTRAP",
+        :long => "--bootstrap BOOTSTRAP_FILENAME",
+        :description => "Bootstrap a distro using a template",
+        :proc => Proc.new { |b| Chef::Config[:knife][:distro] = b },
+        :default => "ubuntu10.04-gems"
+        
+      option :tls_cert_directory,
+        :short => "-t PATH",
+        :long => "--tls-path PATH",
+        :description => "The path to your libvirt TLS keys",
+        :proc => Proc.new { || Chef::Config[:knife][:] = }
+        :default => "#{}"
       
-      
-      option :memory,
-        :short => "-m MEM",
-        :long => "--mem MEM",
-        :description => "The amount of RAM to allocate to the new server in MB",
-        :default => 128
-      
-      option :volume_size,
-        :short => "-v SIZE"
-        :long => "--volume-size SIZE",
-        :description => "The size of the volume in GB"
-
+      # NEW CONVENTION!!!
+      # /path/to/tls/files/hostname
       
     end
   end
