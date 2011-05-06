@@ -63,7 +63,7 @@ class Chef
         :short => "-t PATH",
         :long => "--tls-path PATH",
         :description => "The path to your libvirt TLS keys",
-        :proc => Proc.new { || Chef::Config[:knife][:] = }
+        :proc => Proc.new { || Chef::Config[:knife][:tls_cert_directory] = }
         :default => "#{}"
       
       # NEW CONVENTION!!!
