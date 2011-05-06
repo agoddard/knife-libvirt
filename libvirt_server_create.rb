@@ -27,7 +27,7 @@ class Chef
         Chef::Knife::Bootstrap.load_deps
       end
             
-      banner "knife libvirt server create (options)"
+      banner "knife libvirt server create OPTIONS"
       
       option :flavor,
         :short => "-f FLAVOR",
@@ -63,11 +63,14 @@ class Chef
         :short => "-t PATH",
         :long => "--tls-path PATH",
         :description => "The path to your libvirt TLS keys",
-        :proc => Proc.new { || Chef::Config[:knife][:tls_cert_directory] = }
-        :default => "#{}"
+        :proc => Proc.new { |t| Chef::Config[:knife][:tls_cert_directory] = t}
       
       # NEW CONVENTION!!!
       # /path/to/tls/files/hostname
+      
+      def run
+        puts config[:distro]
+      end
       
     end
   end
