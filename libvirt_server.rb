@@ -20,6 +20,105 @@ require "chef/knife"
 
 class Chef
   class Knife
+    class LibvirtServerList < Knife
+
+      deps do
+        require 'chef/knife/bootstrap'
+        Chef::Knife::Bootstrap.load_deps
+      end
+            
+      banner "knife libvirt server list (options)"
+      
+      option :flavor,
+        :short => "-f FLAVOR",
+        :long => "--flavor FLAVOR",
+        :description => "The flavor of server (small, medium, etc)",
+        :proc => Proc.new { |f| Chef::Config[:knife][:flavor] = f },
+        :default => "small"
+        
+      option :system,
+        :short => "-s SYSTEM ",
+        :long => "--system SYSTEM",
+        :description => "A system filename",
+        :proc => Proc.new { |i| Chef::Config[:knife][:system] = i }
+      
+      option :hostname,
+        :short => "-n HOSTNAME",
+        :long => "--name HOSTNAME",
+        :description => "The host name of the new server"
+        
+      option :domain,
+        :short => "-d DOMAIN",
+        :long => "--domain DOMAIN",
+        :description => "Domain name of the new server"
+        
+      option :bootstrap,
+        :short => "-b BOOTSTRAP",
+        :long => "--bootstrap BOOTSTRAP_FILENAME",
+        :description => "Bootstrap a distro using a template",
+        :proc => Proc.new { |b| Chef::Config[:knife][:distro] = b },
+        :default => "ubuntu10.04-gems"
+        
+      option :libvirt_tls_path,
+        :short => "-t PATH",
+        :long => "--tls-path PATH",
+        :description => "The path to your libvirt TLS keys",
+        :proc => Proc.new { |t| Chef::Config[:knife][:libvirt_tls_path] = t}
+        
+        
+      def get_state_description(state_id)
+        description = case state_id
+          when 0
+             "No State"
+          when 1
+             "Active"
+          when 2
+             "Blocked"
+          when 3
+             "Paused"
+          when 4
+             "Shuttng Down"
+          when 5
+             "Inactive"
+          when 6
+             "Crashed"
+           else
+             "Unknown"
+         end
+      end
+      
+      def get_domain_info(domain)
+        # TODO reformat
+        puts "Name: #{domain.name}"
+        puts "ID: #{domain.uuid}"
+        puts "---------------"
+        puts "Memory: #{(domain.info.memory/1024.0).round(2)} MB"
+        puts "Maximum Memory: #{(domain.max_memory/1024.0).round(2)} MB"
+        puts "CPUs: #{domain.info.nr_virt_cpu}"
+        puts "State: #{get_state_description(domain.info.state)}"
+        puts "======================="
+        puts
+      end
+
+      
+      def run
+        host = "qemu+tls://#{Chef::Config[:knife][:libvirt_host]}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{Chef::Config[:knife][:libvirt_host]}"
+        connection = Libvirt::open(host)
+        puts "Host: #{Chef::Config[:knife][:libvirt_host]}"
+        puts "Active: #{connection.num_of_domains}"
+        puts "Inactive: #{connection.num_of_defined_domains}"
+        puts "---------------"
+        connection.list_domains.each do |domain_id|
+          domain = connection.lookup_domain_by_id(domain_id)
+          get_domain_info(domain)
+        end
+        connection.list_defined_domains.each do |domain_name|
+          domain = connection.lookup_domain_by_name(domain_name)
+          get_domain_info(domain)
+        end
+      end
+    end
+
     class LibvirtServerCreate < Knife
 
       deps do
