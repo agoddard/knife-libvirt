@@ -1,11 +1,24 @@
-require "chef/knife"
-require "libvirt"
 
 
 class Chef
   class Knife
+    
+    
+
+    module LibvirtStorage
+      def to_gb(kb)
+        (kb/1073741824.0).round(2)
+      end
+      def to_mb(kb)
+        (kb/1048576.0).round(2)
+      end
+    end
+    
     class LibvirtStoragePoolList < Knife
+      include LibvirtStorage
       deps do
+        require "chef/knife"
+        require "libvirt"
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
       end
@@ -36,7 +49,10 @@ class Chef
     end
     
     class LibvirtStoragePoolShow < Knife
+      include LibvirtStorage
       deps do
+        require "chef/knife"
+        require "libvirt"
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
       end
@@ -54,9 +70,10 @@ class Chef
           puts "Volumes: #{pool.num_of_volumes}"
           puts "Autostart: #{pool.autostart?}"
           puts "Persistent: #{pool.persistent?}"
-          puts "Capacity: #{(pool.info.capacity/1073741824.0).round(2)} GB"
-          puts "Allocated: #{(pool.info.allocation/1073741824.0).round(2)} GB"
-          puts "Available: #{(pool.info.available/1073741824.0).round(2)} GB"
+          # puts "Capacity #{pool.info.capacity.to_gb}"
+          puts "Capacity: #{to_gb(pool.info.capacity)} GB"
+          puts "Allocated: #{to_gb(pool.info.allocation)} GB"
+          puts "Available: #{to_gb(pool.info.available)} GB"
           puts "======================="
           puts
         end
@@ -64,7 +81,10 @@ class Chef
     end
     
     class LibvirtStorageVolumeList < Knife
+      include LibvirtStorage
       deps do
+        require "chef/knife"
+        require "libvirt"
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
       end
@@ -80,14 +100,17 @@ class Chef
           storage_pool = connection.lookup_storage_pool_by_name(pool_name)
           storage_pool.list_volumes.each do |volume|
             vol = storage_pool.lookup_volume_by_name(volume)
-            puts "#{volume} #{(vol.info.allocation/1048576.0).round(2)} MB/#{(vol.info.capacity/1048576.0).round(2)} MB"
+            puts "#{volume} #{to_mb(vol.info.allocation)} MB/#{to_mb(vol.info.capacity)} MB"
           end
           puts "======================="
         end
       end
       
       class LibvirtStorageVolumeShow < Knife
+        include LibvirtStorage
         deps do
+          require "chef/knife"
+          require "libvirt"
           require 'chef/knife/bootstrap'
           Chef::Knife::Bootstrap.load_deps
         end
@@ -103,13 +126,10 @@ class Chef
             puts "Name: #{volume.name}"
             puts "Pool: #{volume.pool.name}"
             puts "---------------"
-            # puts "Autostart: #{pool.autostart?}"
-            # puts "Persistent: #{pool.persistent?}"
-            puts "Capacity:  #{(volume.info.capacity/1048576.0).round(2)} MB"
-            puts "Allocated: #{(volume.info.allocation/1048576.0).round(2)} MB"
+            puts "Capacity:  #{to_mb(volume.info.capacity)} MB"
+            puts "Allocated: #{to_mb(volume.info.allocation)} MB"
             puts "Path: #{volume.path}"
             puts "Key:  #{volume.key}"
-            # puts "Available: #{(pool.info.available/1073741824.0).round(2)} GB"
             puts "======================="
             puts
           end
