@@ -93,6 +93,7 @@ class Chef
         end
 
         banner "knife libvirt storage volume show POOL VOLUME (options)"
+        
 
         def run
           host = "qemu+tls://#{Chef::Config[:knife][:libvirt_host]}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{Chef::Config[:knife][:libvirt_host]}"

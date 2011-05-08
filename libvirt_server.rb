@@ -65,29 +65,11 @@ class Chef
         :description => "The path to your libvirt TLS keys",
         :proc => Proc.new { |t| Chef::Config[:knife][:libvirt_tls_path] = t}
         
-        
-      def get_state_description(state_id)
-        description = case state_id
-          when 0
-             "No State"
-          when 1
-             "Active"
-          when 2
-             "Blocked"
-          when 3
-             "Paused"
-          when 4
-             "Shuttng Down"
-          when 5
-             "Inactive"
-          when 6
-             "Crashed"
-           else
-             "Unknown"
-         end
-      end
+
+      
       
       def get_domain_info(domain)
+        states = ["No State","Active","Blocked","Paused","Shutting Down","Inactive","Crashed"]
         # TODO reformat
         puts "Name: #{domain.name}"
         puts "ID: #{domain.uuid}"
@@ -95,7 +77,7 @@ class Chef
         puts "Memory: #{(domain.info.memory/1024.0).round(2)} MB"
         puts "Maximum Memory: #{(domain.max_memory/1024.0).round(2)} MB"
         puts "CPUs: #{domain.info.nr_virt_cpu}"
-        puts "State: #{get_state_description(domain.info.state)}"
+        puts "State: #{states[(domain.info.state)]}"
         puts "======================="
         puts
       end
