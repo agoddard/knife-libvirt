@@ -37,13 +37,18 @@ class Chef
       deps do
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
+        require 'chef/data_bag_item'
       end
       
       banner "knife libvirt flavor edit FLAVOR (options)"
       
       def run
-        #TODO bring the flavor into edit mode.
-        "[NT]"
+        flavor = @name_args.first
+        item = Chef::DataBagItem.load('libvirt_flavors', flavor)
+        output = edit_data(item)
+        rest.put_rest("data/libvirt_flavors/#{flavor}", output)
+        stdout.puts("Saved data_bag_item[#{flavor}]")
+        output(format_for_display(object.raw_data)) if config[:print_after]
       end
     end
     
