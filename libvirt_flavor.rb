@@ -5,7 +5,7 @@ class Chef
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
         require 'chef/data_bag'
-        end
+      end
       
       banner "knife libvirt flavor list (options)"
       

@@ -1,12 +1,12 @@
+require 'chef/knife'
+
 class Chef
   class Knife
     class LibvirtStoragePoolList < Knife
       deps do
-        require 'chef/knife/bootstrap'
         require 'libvirt'
-        Chef::Knife::Bootstrap.load_deps
       end
-      
+          
       banner "knife libvirt storage pool list (options)"
 
 #TODO re-enable arguments with defaults from knife.rb      
@@ -14,9 +14,8 @@ class Chef
       #   :short => "-h HOST",
       #   :long => "--host HOST",
       #   :description => "The Libvirt host",
-      #   :proc => Proc.new { |h| Chef::Config[:knife][:libvirt_host] = h },
-      #   :default => Chef::Config[:knife][:libvirt_host]
-      #   # :default => "qemu+tls://#{Chef::Config[:knife][:libvirt_host]}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{Chef::Config[:knife][:libvirt_host]}"
+      #   :proc => Proc.new { |h| Chef::Config[:knife][:libvirt_host] = h}
+        
       # 
       # option :libvirt_tls_path,
       #   :short => "-t PATH",
@@ -25,8 +24,9 @@ class Chef
       #   :proc => Proc.new { |t| Chef::Config[:knife][:libvirt_tls_path] = t},
       #   :default => Chef::Config[:knife][:libvirt_tls_path]            
       def run
-        host = "qemu+tls://#{Chef::Config[:knife][:libvirt_host]}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{Chef::Config[:knife][:libvirt_host]}"
-        connection = Libvirt::open(host)
+        host = Chef::Config[:knife][:libvirt_host]
+        uri = "qemu+tls://#{host}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{host}"
+        connection = Libvirt::open(uri)
         puts connection.list_storage_pools
       end
     end
@@ -67,13 +67,14 @@ class Chef
     class LibvirtStorageVolumeList < Knife
       deps do
         require 'chef/knife/bootstrap'
+        require 'libvirt'
         Chef::Knife::Bootstrap.load_deps
       end
       
       banner "knife libvirt storage volume list (options)"
       
       def to_mb(kb)
-        (kb/1048576.0).round(2)
+        (kb/1024.0).round(2)
       end
       
       def run

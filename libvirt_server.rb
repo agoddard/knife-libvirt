@@ -74,7 +74,7 @@ class Chef
       end
 
       def to_mb(kb)
-        (kb/1048576.0).round(2)
+        (kb/1024.0).round(2)
       end
 
 
