@@ -16,12 +16,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-require "chef/knife"
+require 'chef/knife'
+require './libvirt_knife'
 
 class Chef
   class Knife
     class LibvirtServerList < Knife
-
+      include LibvirtKnife
       deps do
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
@@ -74,8 +75,8 @@ class Chef
         puts "Name: #{domain.name}"
         puts "ID: #{domain.uuid}"
         puts "---------------"
-        puts "Memory: #{(domain.info.memory/1024.0).round(2)} MB"
-        puts "Maximum Memory: #{(domain.max_memory/1024.0).round(2)} MB"
+        puts "Memory: #{to_mb(domain.info.memory)} MB"
+        puts "Maximum Memory: #{to_mb(domain.max_memory)} MB"
         puts "CPUs: #{domain.info.nr_virt_cpu}"
         puts "State: #{states[(domain.info.state)]}"
         puts "======================="

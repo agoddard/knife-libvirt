@@ -1,24 +1,11 @@
-
-
+require './libvirt_knife'
+require 'chef/knife'
+        
 class Chef
   class Knife
-    
-    
-
-    module LibvirtStorage
-      def to_gb(kb)
-        (kb/1073741824.0).round(2)
-      end
-      def to_mb(kb)
-        (kb/1048576.0).round(2)
-      end
-    end
-    
     class LibvirtStoragePoolList < Knife
-      include LibvirtStorage
+      include LibvirtKnife
       deps do
-        require "chef/knife"
-        require "libvirt"
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
       end
@@ -42,17 +29,14 @@ class Chef
       #   :default => Chef::Config[:knife][:libvirt_tls_path]
 
       def run
-        host = "qemu+tls://#{Chef::Config[:knife][:libvirt_host]}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{Chef::Config[:knife][:libvirt_host]}"
-        connection = Libvirt::open(host)
+        connection = connect(Chef::Config[:knife][:libvirt_host], Chef::Config[:knife][:libvirt_tls_path])
         puts connection.list_storage_pools
       end
     end
-    
+        
     class LibvirtStoragePoolShow < Knife
-      include LibvirtStorage
+      include LibvirtKnife
       deps do
-        require "chef/knife"
-        require "libvirt"
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
       end
@@ -60,8 +44,7 @@ class Chef
       banner "knife libvirt storage pool show POOL (options)"
       
       def run
-        host = "qemu+tls://#{Chef::Config[:knife][:libvirt_host]}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{Chef::Config[:knife][:libvirt_host]}"
-        connection = Libvirt::open(host)
+        connection = connect(Chef::Config[:knife][:libvirt_host], Chef::Config[:knife][:libvirt_tls_path])
         @name_args.each do |pool_name|
           pool = connection.lookup_storage_pool_by_name(pool_name)
           puts "Name: #{pool.name}"
@@ -70,7 +53,6 @@ class Chef
           puts "Volumes: #{pool.num_of_volumes}"
           puts "Autostart: #{pool.autostart?}"
           puts "Persistent: #{pool.persistent?}"
-          # puts "Capacity #{pool.info.capacity.to_gb}"
           puts "Capacity: #{to_gb(pool.info.capacity)} GB"
           puts "Allocated: #{to_gb(pool.info.allocation)} GB"
           puts "Available: #{to_gb(pool.info.available)} GB"
@@ -81,10 +63,8 @@ class Chef
     end
     
     class LibvirtStorageVolumeList < Knife
-      include LibvirtStorage
+      include LibvirtKnife
       deps do
-        require "chef/knife"
-        require "libvirt"
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
       end
@@ -92,8 +72,7 @@ class Chef
       banner "knife libvirt storage volume list (options)"
       
       def run
-        host = "qemu+tls://#{Chef::Config[:knife][:libvirt_host]}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{Chef::Config[:knife][:libvirt_host]}"
-        connection = Libvirt::open(host)
+        connection = connect(Chef::Config[:knife][:libvirt_host], Chef::Config[:knife][:libvirt_tls_path])
         connection.list_storage_pools.each do |pool_name|
           puts "#{pool_name}:"
           puts "-----------------------"
@@ -107,20 +86,17 @@ class Chef
       end
       
       class LibvirtStorageVolumeShow < Knife
-        include LibvirtStorage
+        include LibvirtKnife
         deps do
-          require "chef/knife"
-          require "libvirt"
           require 'chef/knife/bootstrap'
           Chef::Knife::Bootstrap.load_deps
         end
-
+    
         banner "knife libvirt storage volume show POOL VOLUME (options)"
         
-
+    
         def run
-          host = "qemu+tls://#{Chef::Config[:knife][:libvirt_host]}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{Chef::Config[:knife][:libvirt_host]}"
-          connection = Libvirt::open(host)
+          connection = connect(Chef::Config[:knife][:libvirt_host], Chef::Config[:knife][:libvirt_tls_path])
           @name_args.each_slice(2) do |pool_name, volume_name|
             volume = connection.lookup_storage_pool_by_name(pool_name).lookup_volume_by_name(volume_name)
             puts "Name: #{volume.name}"
