@@ -45,18 +45,39 @@ class Chef
     class LibvirtFlavorFromFile < Knife
       deps do
         require 'chef/knife/bootstrap'
+        require 'chef/knife/core/object_loader'
         Chef::Knife::Bootstrap.load_deps
       end
       
-      banner "knife libvirt flavor from file FLAVOR FILE (options)"
+      banner "knife libvirt flavor from file FILE (options)"
+      
+      def loader
+        @loader ||= Knife::Core::ObjectLoader.new(DataBagItem, ui)
+      end
+      
+      def create_dbag
+        begin
+          rest.post_rest("data", { "name" => "libvirt_flavors" })
+        rescue Net::HTTPServerException => e
+          puts "Data bag #{@data_bag_name} already exists"
+        end
+      end
 
       def run
-        flavor, file = @name_args
-        # modify file here -- add the attributes to the JSON that need to be added
+        file = @name_args.first
+        item = loader.load_from("data_bags", "libvirt_flavors", file)
         dbag = Chef::DataBagItem.new
-        dbag.data_bag('libvirt_flavors')
+        dbag.data_bag("libvirt_flavors")
         dbag.raw_data = item # item is json
-        dbag.save
+        begin
+          dbag.save
+        rescue
+          create_dbag
+          puts "Creating data bag for libvirt flavors"
+          dbag.save
+        end
+        puts "Updated flavor '#{dbag.id}'"
+
         # modify json file into what chef expects with all the defaults we want
         # call the chef methods that save the data bag.
       end
