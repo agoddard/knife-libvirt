@@ -1,11 +1,9 @@
-require 'chef/knife'
-        
 class Chef
   class Knife
     class LibvirtStoragePoolList < Knife
-      include LibvirtKnife
       deps do
         require 'chef/knife/bootstrap'
+        require 'libvirt'
         Chef::Knife::Bootstrap.load_deps
       end
       
@@ -25,16 +23,15 @@ class Chef
       #   :long => "--tls-path PATH",
       #   :description => "The path to your libvirt TLS keys",
       #   :proc => Proc.new { |t| Chef::Config[:knife][:libvirt_tls_path] = t},
-      #   :default => Chef::Config[:knife][:libvirt_tls_path]
-
+      #   :default => Chef::Config[:knife][:libvirt_tls_path]            
       def run
-        connection = connect(Chef::Config[:knife][:libvirt_host], Chef::Config[:knife][:libvirt_tls_path])
+        host = "qemu+tls://#{Chef::Config[:knife][:libvirt_host]}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{Chef::Config[:knife][:libvirt_host]}"
+        connection = Libvirt::open(host)
         puts connection.list_storage_pools
       end
     end
         
     class LibvirtStoragePoolShow < Knife
-      include LibvirtKnife
       deps do
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
@@ -42,8 +39,13 @@ class Chef
       
       banner "knife libvirt storage pool show POOL (options)"
       
+      def to_gb(kb)
+        (kb/1073741824.0).round(2)
+      end
+
       def run
-        connection = connect(Chef::Config[:knife][:libvirt_host], Chef::Config[:knife][:libvirt_tls_path])
+        host = "qemu+tls://#{Chef::Config[:knife][:libvirt_host]}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{Chef::Config[:knife][:libvirt_host]}"
+        connection = Libvirt::open(host)
         @name_args.each do |pool_name|
           pool = connection.lookup_storage_pool_by_name(pool_name)
           puts "Name: #{pool.name}"
@@ -62,7 +64,6 @@ class Chef
     end
     
     class LibvirtStorageVolumeList < Knife
-      include LibvirtKnife
       deps do
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
@@ -70,8 +71,13 @@ class Chef
       
       banner "knife libvirt storage volume list (options)"
       
+      def to_mb(kb)
+        (kb/1048576.0).round(2)
+      end
+      
       def run
-        connection = connect(Chef::Config[:knife][:libvirt_host], Chef::Config[:knife][:libvirt_tls_path])
+        host = "qemu+tls://#{Chef::Config[:knife][:libvirt_host]}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{Chef::Config[:knife][:libvirt_host]}"
+        connection = Libvirt::open(host)
         connection.list_storage_pools.each do |pool_name|
           puts "#{pool_name}:"
           puts "-----------------------"
@@ -85,17 +91,20 @@ class Chef
       end
       
       class LibvirtStorageVolumeShow < Knife
-        include LibvirtKnife
         deps do
           require 'chef/knife/bootstrap'
           Chef::Knife::Bootstrap.load_deps
         end
     
         banner "knife libvirt storage volume show POOL VOLUME (options)"
-        
-    
+
+        def to_gb(kb)
+          (kb/1073741824.0).round(2)
+        end
+
         def run
-          connection = connect(Chef::Config[:knife][:libvirt_host], Chef::Config[:knife][:libvirt_tls_path])
+          host = "qemu+tls://#{Chef::Config[:knife][:libvirt_host]}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{Chef::Config[:knife][:libvirt_host]}"
+          connection = Libvirt::open(host)
           @name_args.each_slice(2) do |pool_name, volume_name|
             volume = connection.lookup_storage_pool_by_name(pool_name).lookup_volume_by_name(volume_name)
             puts "Name: #{volume.name}"
