@@ -1,5 +1,3 @@
-require 'chef/knife'
-        
 class Chef
   class Knife
     class LibvirtStoragePoolList < Knife
