@@ -1,4 +1,3 @@
-require './libvirt_knife'
 require 'chef/knife'
         
 class Chef

@@ -17,7 +17,6 @@
 # limitations under the License.
 #
 require 'chef/knife'
-require './libvirt_knife'
 
 class Chef
   class Knife
