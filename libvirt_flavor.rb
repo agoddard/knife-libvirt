@@ -4,13 +4,15 @@ class Chef
       deps do
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
-      end
+        require 'chef/data_bag'
+        end
       
       banner "knife libvirt flavor list (options)"
       
       def run
-        host = "qemu+tls://#{Chef::Config[:knife][:libvirt_host]}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{Chef::Config[:knife][:libvirt_host]}"
-        connection = Libvirt::open(host)
+        Chef::DataBag.load("libvirt_flavors").each do |name,uri|
+          puts "  #{name}"
+        end
       end
     end
 
@@ -18,13 +20,16 @@ class Chef
       deps do
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
+        require 'chef/data_bag'
       end
       
       banner "knife libvirt flavor show FLAVOR (options)"
       
       def run
-        host = "qemu+tls://#{Chef::Config[:knife][:libvirt_host]}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{Chef::Config[:knife][:libvirt_host]}"
-        connection = Libvirt::open(host)
+        @name_args.each do |flavor_name|
+          output(format_for_display(Chef::DataBagItem.load("libvirt_flavors", flavor_name).raw_data))
+          puts
+        end
       end
     end
 
@@ -37,8 +42,8 @@ class Chef
       banner "knife libvirt flavor edit FLAVOR (options)"
       
       def run
-        host = "qemu+tls://#{Chef::Config[:knife][:libvirt_host]}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{Chef::Config[:knife][:libvirt_host]}"
-        connection = Libvirt::open(host)
+        #TODO bring the flavor into edit mode.
+        "[NT]"
       end
     end
     
