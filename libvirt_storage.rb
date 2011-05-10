@@ -96,12 +96,13 @@ class Chef
         deps do
           require 'chef/knife/bootstrap'
           Chef::Knife::Bootstrap.load_deps
+          require 'libvirt'
         end
     
         banner "knife libvirt storage volume show POOL VOLUME (options)"
 
-        def to_gb(kb)
-          (kb/1073741824.0).round(2)
+        def to_mb(kb)
+          (kb/1024.0).round(2)
         end
 
         def run
