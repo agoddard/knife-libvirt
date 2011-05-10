@@ -36,6 +36,7 @@ class Chef
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
         require 'libvirt'
+        require 'nokogiri'
       end
       
       banner "knife libvirt storage pool show POOL (options)"
@@ -50,7 +51,10 @@ class Chef
         @name_args.each do |pool_name|
           pool = connection.lookup_storage_pool_by_name(pool_name)
           puts "Name: #{pool.name}"
+          xml = Nokogiri::XML(pool.xml_desc)
+          puts "Path: #{xml.xpath('//target/path').inner_text}"
           puts "UUID: #{pool.uuid}"
+          # puts "Path: #{pool.xml_desc.inspect}"
           puts "---------------"
           puts "Volumes: #{pool.num_of_volumes}"
           puts "Autostart: #{pool.autostart?}"
@@ -143,6 +147,7 @@ class Chef
               vol = storage_pool.lookup_volume_by_name(volume)
               puts "#{volume} #{bytes_to_mb(vol.info.allocation)} MB"
               puts "#{vol.path}"
+              puts "#{File.dirname vol.path}"
             end
           end
         end
