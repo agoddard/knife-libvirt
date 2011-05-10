@@ -9,6 +9,7 @@ class Chef
       banner "knife libvirt host list (options)"
       
       def run
+        #TODO change hosts config in knife.rb, list hosts
       end
     end
 
@@ -26,6 +27,7 @@ class Chef
       banner "knife libvirt host show HOST (options)"
       
       def run
+        #TODO format for display
         @name_args.each do |host|
           puts "Host: #{host}"
           uri = "qemu+tls://#{host}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{host}"
