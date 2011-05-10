@@ -115,6 +115,8 @@ class Chef
 
       deps do
         require 'chef/knife/bootstrap'
+        require 'nokogiri'
+        require 'libvirt'
         Chef::Knife::Bootstrap.load_deps
       end
             
@@ -156,9 +158,69 @@ class Chef
         :description => "The path to your libvirt TLS keys",
         :proc => Proc.new { |t| Chef::Config[:knife][:libvirt_tls_path] = t}
 
+
+
+
+      def get_server_xml_erb
+        <<-server
+        <domain type='kvm'>
+          <name><%= "poop_#{(1..3).collect{(rand(25) + 65).chr}.join}" %></name>
+          <memory>524288</memory>
+          <currentMemory>524288</currentMemory>
+          <vcpu>1</vcpu>
+          <os>
+            <type arch='x86_64' machine='pc-0.12'>hvm</type>
+            <boot dev='cdrom'/>
+          </os>
+          <features>
+            <acpi/>
+            <apic/>
+            <pae/>
+          </features>
+          <clock offset='utc'/>
+          <on_poweroff>destroy</on_poweroff>
+          <on_reboot>restart</on_reboot>
+          <on_crash>restart</on_crash>
+          <devices>
+            <emulator>/usr/bin/kvm</emulator>
+            <disk type='file' device='disk'>
+              <driver name='qemu' type='qcow2'/>
+              <source file='/var/lib/libvirt/images/lol.img'/>
+              <target dev='vda' bus='virtio'/>
+            </disk>
+            <disk type='file' device='cdrom'>
+              <driver name='qemu' type='raw'/>
+              <source file='/data/storage/media/ubuntu-10.04.1-server-amd64.iso'/>
+              <target dev='hdc' bus='ide'/>
+              <readonly/>
+            </disk>
+            <interface type='bridge'>
+              <source bridge='br1'/>
+              <model type='virtio'/>
+            </interface>
+            <console type='pty'>
+              <target port='0'/>
+            </console>
+            <console type='pty'>
+              <target port='0'/>
+            </console>
+            <input type='mouse' bus='ps2'/>
+            <graphics type='vnc' port='-1' autoport='yes'/>
+            <sound model='es1370'/>
+            <video>
+              <model type='cirrus' vram='9216' heads='1'/>
+            </video>
+          </devices>
+        </domain>
+        server
+      end
       
       def run
-        puts "nothing to see here"
+        host = "qemu+tls://#{Chef::Config[:knife][:libvirt_host]}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{Chef::Config[:knife][:libvirt_host]}"
+        connection = Libvirt::open(host)
+        new_server_xml = ERB.new(get_server_xml_erb).result
+        server = connection.define_domain_xml(new_server_xml)
+        puts "created server"
       end
       
     end

@@ -54,7 +54,6 @@ class Chef
           xml = Nokogiri::XML(pool.xml_desc)
           puts "Path: #{xml.xpath('//target/path').inner_text}"
           puts "UUID: #{pool.uuid}"
-          # puts "Path: #{pool.xml_desc.inspect}"
           puts "---------------"
           puts "Volumes: #{pool.num_of_volumes}"
           puts "Autostart: #{pool.autostart?}"
@@ -143,6 +142,7 @@ class Chef
             connection = Libvirt::open(uri)
             
             storage_pool = connection.lookup_storage_pool_by_name("media")
+            storage_pool.refresh
             storage_pool.list_volumes.each do |volume|
               vol = storage_pool.lookup_volume_by_name(volume)
               puts "#{volume} #{bytes_to_mb(vol.info.allocation)} MB"
@@ -151,25 +151,6 @@ class Chef
             end
           end
         end
-        
-        class LibvirtStorageMediaRefresh < Knife
-          deps do
-            require 'libvirt'
-          end
-          
-          
-          banner "knife libvirt storage media refresh (options)"
-          
-          def run
-            host = Chef::Config[:knife][:libvirt_host]
-            uri = "qemu+tls://#{host}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{host}"
-            connection = Libvirt::open(uri)
-            storage_pool = connection.lookup_storage_pool_by_name("media")
-            storage_pool.refresh
-            puts "Refreshed storage pool"
-          end
-        end
-        
         
       end
     end
