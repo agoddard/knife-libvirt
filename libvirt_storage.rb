@@ -121,6 +121,51 @@ class Chef
             puts
           end
         end
+        
+        class LibvirtStorageMediaList < Knife
+          deps do
+            require 'libvirt'
+          end
+
+          banner "knife libvirt storage media list (options)"
+          
+          def bytes_to_mb(bytes)
+            (bytes/1048576.0).round(2)
+          end
+          
+          def run
+            host = Chef::Config[:knife][:libvirt_host]
+            uri = "qemu+tls://#{host}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{host}"
+            connection = Libvirt::open(uri)
+            
+            storage_pool = connection.lookup_storage_pool_by_name("media")
+            storage_pool.list_volumes.each do |volume|
+              vol = storage_pool.lookup_volume_by_name(volume)
+              puts "#{volume} #{bytes_to_mb(vol.info.allocation)} MB"
+              puts "#{vol.path}"
+            end
+          end
+        end
+        
+        class LibvirtStorageMediaRefresh < Knife
+          deps do
+            require 'libvirt'
+          end
+          
+          
+          banner "knife libvirt storage media refresh (options)"
+          
+          def run
+            host = Chef::Config[:knife][:libvirt_host]
+            uri = "qemu+tls://#{host}/system?pkipath=#{Chef::Config[:knife][:libvirt_tls_path]}/#{host}"
+            connection = Libvirt::open(uri)
+            storage_pool = connection.lookup_storage_pool_by_name("media")
+            storage_pool.refresh
+            puts "Refreshed storage pool"
+          end
+        end
+        
+        
       end
     end
   end
