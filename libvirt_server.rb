@@ -1,6 +1,6 @@
 #
 # Author:: Anthony Goddard (<anthony@anthonygoddard.com>)
-# Author:: Chuck Ha (<ggnextmap@gmail.com>)
+# Author:: Chuck Ha (<ha.chuck@gmail.com>)
 # Copyright:: Copyright (c) 2011 Woods Hole Marine Biological Laboratory.
 # License:: Apache License, Version 2.0
 #
